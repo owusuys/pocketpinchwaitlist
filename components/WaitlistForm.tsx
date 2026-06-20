@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { track } from "@vercel/analytics";
 
 type Status = "idle" | "submitting" | "success" | "duplicate" | "error";
 
@@ -31,7 +30,6 @@ export default function WaitlistForm() {
 
     setStatus("submitting");
     setErrors({});
-    track("waitlist_submit_attempt");
 
     try {
       const res = await fetch("/api/waitlist", {
@@ -63,15 +61,12 @@ export default function WaitlistForm() {
 
       if (data.duplicate) {
         setStatus("duplicate");
-        track("waitlist_submit_success", { duplicate: true });
       } else {
         setStatus("success");
-        track("waitlist_submit_success", { duplicate: false });
       }
     } catch {
       setStatus("error");
       setErrors({ form: "Something went wrong. Please try again." });
-      track("waitlist_submit_error");
     }
   }
 
