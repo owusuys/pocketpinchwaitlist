@@ -7,7 +7,7 @@ import {
 } from "@/emails/confirmation";
 
 // Run on the Node.js runtime (Resend SDK + outbound fetch).
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
