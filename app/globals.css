@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Verdict / score bands */
+  --verdict-green: #16a34a;
+  --verdict-amber: #f59e0b;
+  --verdict-orange: #ea580c;
+  --verdict-red: #dc2626;
+
+  /* Dark theme tokens (from the in-app score screen) */
+  --ink-bg: #0e0f12;
+  --ink-raised: #17181d;
+  --ink-tile: #1c1d23;
+  --ink-hairline: #2a2b33;
+  --ink-text: #f5f5f7;
+  --ink-muted: #9a9ba3;
+  --ink-faint: #6b6c75;
+}
+
+html {
+  color-scheme: dark;
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--ink-bg);
+  color: var(--ink-text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Respect users who prefer reduced motion: kill all non-essential animation. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Visible, consistent focus ring for keyboard users (WCAG AA). */
+:focus-visible {
+  outline: 2px solid var(--verdict-green);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Off-screen technique for the honeypot + visually-hidden helpers.
+   Not display:none — bots that ignore CSS still fill it; humans never see it. */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Gentle on-scroll reveal. Elements start hidden and fade/slide in. */
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reveal {
+  opacity: 0;
+  animation: reveal-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
