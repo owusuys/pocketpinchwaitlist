@@ -10,6 +10,18 @@ binding = "ASSETS"
 [vars]
 NEXT_PUBLIC_SITE_URL = "https://pocketpinch.ntafostudios.com"
 
+[[routes]]
+pattern = "pocketpinch.ntafostudios.com/waitlist*"
+zone_name = "ntafostudios.com"
+
+[[routes]]
+pattern = "pocketpinch.ntafostudios.com/api/*"
+zone_name = "ntafostudios.com"
+
+[[routes]]
+pattern = "pocketpinch.ntafostudios.com/_next/*"
+zone_name = "ntafostudios.com"
+
 [observability]
 enabled = true
 
