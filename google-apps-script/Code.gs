@@ -1,19 +1,12 @@
 /**
  * PocketPinch Waitlist — Google Apps Script webhook.
  *
- * Receives signups from the Next.js /api/waitlist route and appends them to the
- * bound Google Sheet. See the repo README for step-by-step deployment.
- *
- * Sheet columns (row 1 is a header row):
+ * Sheet 1 "Signups" columns (row 1 is a header row):
  *   A: Timestamp | B: First Name | C: Email | D: Source
  *
- * Setup checklist:
- *   1. Create the Sheet, add the header row above.
- *   2. Extensions → Apps Script, paste this file.
- *   3. Project Settings → Script Properties → add  WAITLIST_SECRET  (long random string).
- *   4. Deploy → New deployment → Web app → Execute as: Me, Who has access: Anyone.
- *   5. Copy the /exec URL into the site's GOOGLE_APPS_SCRIPT_URL env var.
- *   6. Use the SAME secret as WAITLIST_SHARED_SECRET in the site env.
+ * Sheet 2 "Stats" is auto-maintained after each new signup:
+ *   Shows total signups, page views (manual, from Cloudflare Web Analytics),
+ *   and conversion rate.
  */
 
 function doPost(e) {
@@ -21,7 +14,6 @@ function doPost(e) {
     var payload = JSON.parse(e.postData.contents);
     var expected = PropertiesService.getScriptProperties().getProperty('WAITLIST_SECRET');
 
-    // Verify the shared secret. Rejects random people POSTing to the open URL.
     if (!expected || payload.secret !== expected) {
       return json({ ok: false, error: 'forbidden' });
     }
@@ -36,12 +28,12 @@ function doPost(e) {
     }
 
     var lock = LockService.getScriptLock();
-    lock.waitLock(10000); // serialize appends so de-dupe is race-free
+    lock.waitLock(10000);
     try {
-      var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+      var ss = SpreadsheetApp.getActiveSpreadsheet();
+      var sheet = ss.getSheets()[0];
       var last = sheet.getLastRow();
 
-      // De-dupe on column C (Email), case-insensitive. Skip header row.
       if (last >= 2) {
         var emails = sheet.getRange(2, 3, last - 1, 1).getValues();
         for (var i = 0; i < emails.length; i++) {
@@ -52,6 +44,7 @@ function doPost(e) {
       }
 
       sheet.appendRow([timestamp, firstName, email, source]);
+      updateStats(ss);
       return json({ ok: true, duplicate: false });
     } finally {
       lock.releaseLock();
@@ -61,7 +54,31 @@ function doPost(e) {
   }
 }
 
-// Simple GET so you can sanity-check the deployment URL in a browser.
+function updateStats(ss) {
+  ss = ss || SpreadsheetApp.getActiveSpreadsheet();
+  var signupSheet = ss.getSheets()[0];
+  var statsSheet = ss.getSheetByName('Stats');
+
+  if (!statsSheet) {
+    statsSheet = ss.insertSheet('Stats');
+    statsSheet.getRange('A1:B1').setValues([['Metric', 'Value']]);
+    statsSheet.getRange('A1:B1').setFontWeight('bold');
+    statsSheet.getRange('A2:A6').setValues([
+      ['Total Signups'],
+      ['Page Views (update from Cloudflare dashboard)'],
+      ['Conversion Rate'],
+      [''],
+      ['Last Updated'],
+    ]);
+    // Conversion rate formula references B2 (signups) and B3 (page views)
+    statsSheet.getRange('B4').setFormula('=IF(B3>0, TEXT(B2/B3,"0.0%"), "—")');
+  }
+
+  var totalSignups = Math.max(0, signupSheet.getLastRow() - 1);
+  statsSheet.getRange('B2').setValue(totalSignups);
+  statsSheet.getRange('B6').setValue(new Date());
+}
+
 function doGet() {
   return json({ ok: true, service: 'pocketpinch-waitlist' });
 }
