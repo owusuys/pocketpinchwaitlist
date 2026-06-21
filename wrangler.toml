@@ -1,25 +1,23 @@
-name = "pocketpinch-waitlist"
+name = "pocketpinchwaitlist"
 main = ".open-next/worker.js"
-compatibility_date = "2024-12-01"
+compatibility_date = "2026-06-20"
 compatibility_flags = ["nodejs_compat"]
 
 [assets]
 directory = ".open-next/assets"
 binding = "ASSETS"
+# Serve /oauth.html literally (no .html stripping / 307) so the Plaid redirect_uri
+# and the Universal Link path resolve with a clean 200.
+html_handling = "none"
 
 [vars]
 NEXT_PUBLIC_SITE_URL = "https://pocketpinch.ntafostudios.com"
 
+# Catch-all route: serves the entire hostname (root, /waitlist, /api/*, /_next/*,
+# /oauth.html and /.well-known/apple-app-site-association) from this Worker.
+# Binds to the existing proxied DNS record for the host.
 [[routes]]
-pattern = "pocketpinch.ntafostudios.com/waitlist*"
-zone_name = "ntafostudios.com"
-
-[[routes]]
-pattern = "pocketpinch.ntafostudios.com/api/*"
-zone_name = "ntafostudios.com"
-
-[[routes]]
-pattern = "pocketpinch.ntafostudios.com/_next/*"
+pattern = "pocketpinch.ntafostudios.com/*"
 zone_name = "ntafostudios.com"
 
 [observability]

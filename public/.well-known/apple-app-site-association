@@ -1,0 +1,12 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["78A9M963Z9.com.ntafostudios.pocketpinch"],
+        "components": [
+          { "/": "/oauth.html", "comment": "Plaid OAuth redirect back into the app" }
+        ]
+      }
+    ]
+  }
+}
